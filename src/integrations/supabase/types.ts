@@ -14,6 +14,123 @@ export type Database = {
   }
   public: {
     Tables: {
+      commits: {
+        Row: {
+          author_id: string | null
+          committed_at: string
+          created_at: string
+          id: string
+          message: string | null
+          repository_id: string
+          sha: string
+        }
+        Insert: {
+          author_id?: string | null
+          committed_at: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          repository_id: string
+          sha: string
+        }
+        Update: {
+          author_id?: string | null
+          committed_at?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          repository_id?: string
+          sha?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commits_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "repositories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deployments: {
+        Row: {
+          created_at: string
+          deployed_at: string
+          environment: string
+          id: string
+          repository_id: string
+          status: Database["public"]["Enums"]["deployment_status"]
+        }
+        Insert: {
+          created_at?: string
+          deployed_at?: string
+          environment?: string
+          id?: string
+          repository_id: string
+          status?: Database["public"]["Enums"]["deployment_status"]
+        }
+        Update: {
+          created_at?: string
+          deployed_at?: string
+          environment?: string
+          id?: string
+          repository_id?: string
+          status?: Database["public"]["Enums"]["deployment_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deployments_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "repositories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      metric_snapshots: {
+        Row: {
+          avg_cycle_time_hours: number | null
+          avg_review_turnaround_hours: number | null
+          commit_count: number
+          created_at: string
+          date: string
+          deployment_count: number
+          id: string
+          repository_id: string
+          total_prs: number
+        }
+        Insert: {
+          avg_cycle_time_hours?: number | null
+          avg_review_turnaround_hours?: number | null
+          commit_count?: number
+          created_at?: string
+          date: string
+          deployment_count?: number
+          id?: string
+          repository_id: string
+          total_prs?: number
+        }
+        Update: {
+          avg_cycle_time_hours?: number | null
+          avg_review_turnaround_hours?: number | null
+          commit_count?: number
+          created_at?: string
+          date?: string
+          deployment_count?: number
+          id?: string
+          repository_id?: string
+          total_prs?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metric_snapshots_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "repositories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -41,6 +158,139 @@ export type Database = {
         }
         Relationships: []
       }
+      pull_request_reviews: {
+        Row: {
+          created_at: string
+          id: string
+          pull_request_id: string
+          reviewer_id: string | null
+          state: Database["public"]["Enums"]["review_state"]
+          submitted_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pull_request_id: string
+          reviewer_id?: string | null
+          state?: Database["public"]["Enums"]["review_state"]
+          submitted_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pull_request_id?: string
+          reviewer_id?: string | null
+          state?: Database["public"]["Enums"]["review_state"]
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pull_request_reviews_pull_request_id_fkey"
+            columns: ["pull_request_id"]
+            isOneToOne: false
+            referencedRelation: "pull_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pull_requests: {
+        Row: {
+          author_id: string | null
+          closed_at: string | null
+          created_at: string
+          created_at_github: string | null
+          cycle_time_minutes: number | null
+          github_pr_id: string | null
+          id: string
+          merged_at: string | null
+          number: number
+          repository_id: string
+          review_turnaround_minutes: number | null
+          state: Database["public"]["Enums"]["pr_state"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_at_github?: string | null
+          cycle_time_minutes?: number | null
+          github_pr_id?: string | null
+          id?: string
+          merged_at?: string | null
+          number: number
+          repository_id: string
+          review_turnaround_minutes?: number | null
+          state?: Database["public"]["Enums"]["pr_state"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_at_github?: string | null
+          cycle_time_minutes?: number | null
+          github_pr_id?: string | null
+          id?: string
+          merged_at?: string | null
+          number?: number
+          repository_id?: string
+          review_turnaround_minutes?: number | null
+          state?: Database["public"]["Enums"]["pr_state"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pull_requests_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "repositories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      repositories: {
+        Row: {
+          created_at: string
+          full_name: string
+          github_repo_id: string | null
+          id: string
+          is_active: boolean
+          name: string
+          owner: string
+          updated_at: string
+          user_id: string
+          webhook_configured: boolean
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          github_repo_id?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          owner: string
+          updated_at?: string
+          user_id: string
+          webhook_configured?: boolean
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          github_repo_id?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          owner?: string
+          updated_at?: string
+          user_id?: string
+          webhook_configured?: boolean
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -59,6 +309,50 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_events: {
+        Row: {
+          created_at: string
+          delivery_id: string | null
+          event_type: string
+          id: string
+          processed_at: string | null
+          raw_payload: Json
+          received_at: string
+          repository_id: string | null
+          status: Database["public"]["Enums"]["webhook_event_status"]
+        }
+        Insert: {
+          created_at?: string
+          delivery_id?: string | null
+          event_type: string
+          id?: string
+          processed_at?: string | null
+          raw_payload?: Json
+          received_at?: string
+          repository_id?: string | null
+          status?: Database["public"]["Enums"]["webhook_event_status"]
+        }
+        Update: {
+          created_at?: string
+          delivery_id?: string | null
+          event_type?: string
+          id?: string
+          processed_at?: string | null
+          raw_payload?: Json
+          received_at?: string
+          repository_id?: string | null
+          status?: Database["public"]["Enums"]["webhook_event_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_events_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "repositories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -71,9 +365,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      owns_repository: {
+        Args: { _repo_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "owner" | "admin" | "member"
+      deployment_status: "success" | "failure" | "pending" | "in_progress"
+      pr_state: "open" | "merged" | "closed"
+      review_state: "approved" | "changes_requested" | "commented" | "pending"
+      webhook_event_status: "received" | "processed" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -202,6 +504,10 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "admin", "member"],
+      deployment_status: ["success", "failure", "pending", "in_progress"],
+      pr_state: ["open", "merged", "closed"],
+      review_state: ["approved", "changes_requested", "commented", "pending"],
+      webhook_event_status: ["received", "processed", "failed"],
     },
   },
 } as const
