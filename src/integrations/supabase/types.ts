@@ -365,6 +365,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      owns_repository: {
+        Args: { _repo_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "owner" | "admin" | "member"
