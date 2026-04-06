@@ -97,17 +97,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw new Error(error.message);
+    if (data.user) {
+      const appUser = await fetchAppUser(data.user);
+      setState({ user: appUser, isAuthenticated: true, isLoading: false });
+    }
   }, []);
 
   const register = useCallback(async (name: string, email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { name } },
     });
     if (error) throw new Error(error.message);
+    if (data.user) {
+      const appUser = await fetchAppUser(data.user);
+      setState({ user: appUser, isAuthenticated: true, isLoading: false });
+    }
   }, []);
 
   const logout = useCallback(async () => {
