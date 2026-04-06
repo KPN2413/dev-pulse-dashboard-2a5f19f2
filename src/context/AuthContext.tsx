@@ -1,8 +1,18 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { User } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
+import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
+
+export interface AppUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatarUrl?: string;
+  createdAt: string;
+}
 
 interface AuthState {
-  user: User | null;
+  user: AppUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -16,19 +26,33 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEY = "devpulse_auth";
+async function fetchAppUser(supabaseUser: SupabaseUser): Promise<AppUser> {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", supabaseUser.id)
+    .single();
 
-const demoUser: User = {
-  id: "u1",
-  name: "Sarah Chen",
-  email: "sarah@devpulse.io",
-  role: "OWNER",
-  createdAt: "2024-01-15T10:00:00Z",
-};
+  const { data: roles } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", supabaseUser.id);
 
-// Simple in-memory user store for local auth
-const localUsers: Map<string, { user: User; passwordHash: string }> = new Map();
-localUsers.set("sarah@devpulse.io", { user: demoUser, passwordHash: "demo123" });
+  const topRole = roles?.length
+    ? roles.some(r => r.role === "owner") ? "OWNER"
+      : roles.some(r => r.role === "admin") ? "ADMIN"
+      : "MEMBER"
+    : "MEMBER";
+
+  return {
+    id: supabaseUser.id,
+    name: profile?.name || supabaseUser.email?.split("@")[0] || "User",
+    email: supabaseUser.email || "",
+    role: topRole,
+    avatarUrl: profile?.avatar_url || undefined,
+    createdAt: supabaseUser.created_at,
+  };
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
@@ -38,55 +62,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const user = JSON.parse(stored) as User;
-        setState({ user, isAuthenticated: true, isLoading: false });
-      } catch {
-        localStorage.removeItem(STORAGE_KEY);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          // Use setTimeout to avoid potential deadlock with Supabase client
+          setTimeout(async () => {
+            try {
+              const appUser = await fetchAppUser(session.user);
+              setState({ user: appUser, isAuthenticated: true, isLoading: false });
+            } catch {
+              setState({ user: null, isAuthenticated: false, isLoading: false });
+            }
+          }, 0);
+        } else {
+          setState({ user: null, isAuthenticated: false, isLoading: false });
+        }
+      }
+    );
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        try {
+          const appUser = await fetchAppUser(session.user);
+          setState({ user: appUser, isAuthenticated: true, isLoading: false });
+        } catch {
+          setState({ user: null, isAuthenticated: false, isLoading: false });
+        }
+      } else {
         setState(s => ({ ...s, isLoading: false }));
       }
-    } else {
-      setState(s => ({ ...s, isLoading: false }));
-    }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    await new Promise(r => setTimeout(r, 500));
-    const entry = localUsers.get(email);
-    if (!entry || entry.passwordHash !== password) {
-      throw new Error("Invalid email or password");
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entry.user));
-    setState({ user: entry.user, isAuthenticated: true, isLoading: false });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
   }, []);
 
   const register = useCallback(async (name: string, email: string, password: string) => {
-    await new Promise(r => setTimeout(r, 500));
-    if (localUsers.has(email)) {
-      throw new Error("An account with this email already exists");
-    }
-    const newUser: User = {
-      id: `u${Date.now()}`,
-      name,
+    const { error } = await supabase.auth.signUp({
       email,
-      role: "MEMBER",
-      createdAt: new Date().toISOString(),
-    };
-    localUsers.set(email, { user: newUser, passwordHash: password });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-    setState({ user: newUser, isAuthenticated: true, isLoading: false });
+      password,
+      options: { data: { name } },
+    });
+    if (error) throw new Error(error.message);
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setState({ user: null, isAuthenticated: false, isLoading: false });
   }, []);
 
-  const loginAsDemo = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(demoUser));
-    setState({ user: demoUser, isAuthenticated: true, isLoading: false });
+  const loginAsDemo = useCallback(async () => {
+    // Sign in with pre-seeded demo account
+    const { error } = await supabase.auth.signInWithPassword({
+      email: "sarah@devpulse.io",
+      password: "demo123456",
+    });
+    if (error) {
+      // If demo account doesn't exist yet, create it
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: "sarah@devpulse.io",
+        password: "demo123456",
+        options: { data: { name: "Sarah Chen" } },
+      });
+      if (signUpError) throw new Error(signUpError.message);
+    }
   }, []);
 
   return (

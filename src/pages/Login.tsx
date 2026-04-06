@@ -29,6 +29,19 @@ export default function LoginPage() {
     }
   };
 
+  const handleDemo = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      await loginAsDemo();
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Demo login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
@@ -56,7 +69,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-4">
-          <Button variant="outline" className="w-full" onClick={() => { loginAsDemo(); navigate("/dashboard"); }}>
+          <Button variant="outline" className="w-full" onClick={handleDemo} disabled={loading}>
             View Demo
           </Button>
         </div>
@@ -64,12 +77,6 @@ export default function LoginPage() {
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Don't have an account? <Link to="/register" className="text-primary hover:underline">Create one</Link>
         </p>
-
-        <div className="mt-4 rounded-lg bg-muted p-3 text-xs text-muted-foreground">
-          <p className="font-medium mb-1">Demo credentials:</p>
-          <p>Email: sarah@devpulse.io</p>
-          <p>Password: demo123</p>
-        </div>
       </div>
     </div>
   );
