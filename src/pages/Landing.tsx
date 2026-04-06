@@ -23,9 +23,13 @@ export default function LandingPage() {
   const { isAuthenticated, loginAsDemo } = useAuth();
   const navigate = useNavigate();
 
-  const handleDemo = () => {
-    loginAsDemo();
-    navigate("/dashboard");
+  const handleDemo = async () => {
+    try {
+      await loginAsDemo();
+      navigate("/dashboard");
+    } catch {
+      navigate("/login");
+    }
   };
 
   return (
