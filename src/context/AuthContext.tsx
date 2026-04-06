@@ -124,19 +124,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const loginAsDemo = useCallback(async () => {
-    // Sign in with pre-seeded demo account
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: "sarah@devpulse.io",
       password: "demo123456",
     });
     if (error) {
-      // If demo account doesn't exist yet, create it
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: "sarah@devpulse.io",
         password: "demo123456",
         options: { data: { name: "Sarah Chen" } },
       });
       if (signUpError) throw new Error(signUpError.message);
+      if (signUpData.user) {
+        const appUser = await fetchAppUser(signUpData.user);
+        setState({ user: appUser, isAuthenticated: true, isLoading: false });
+      }
+      return;
+    }
+    if (data.user) {
+      const appUser = await fetchAppUser(data.user);
+      setState({ user: appUser, isAuthenticated: true, isLoading: false });
     }
   }, []);
 
