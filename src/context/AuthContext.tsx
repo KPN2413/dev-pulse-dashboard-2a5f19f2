@@ -126,12 +126,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginAsDemo = useCallback(async () => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: "sarah@devpulse.io",
-      password: "demo123456",
+      password: "DevPulse#Demo2026!",
     });
     if (error) {
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: "sarah@devpulse.io",
-        password: "demo123456",
+        password: "DevPulse#Demo2026!",
         options: { data: { name: "Sarah Chen" } },
       });
       if (signUpError) throw new Error(signUpError.message);
