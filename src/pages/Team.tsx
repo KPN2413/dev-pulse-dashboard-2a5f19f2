@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { getTeamStats } from "@/api/mock-data";
+import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { cn } from "@/lib/utils";
 import { Search, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type SortKey = "name" | "commits" | "prsOpened" | "prsReviewed" | "avgCycleTimeHours" | "avgReviewTurnaroundHours";
 
@@ -12,8 +13,10 @@ export default function TeamPage() {
   const [sortKey, setSortKey] = useState<SortKey>("commits");
   const [sortAsc, setSortAsc] = useState(false);
 
+  const { loading, teamStats } = useDashboardData("", "30d");
+
   const stats = useMemo(() => {
-    let data = getTeamStats();
+    let data = [...teamStats];
     if (search) {
       const q = search.toLowerCase();
       data = data.filter(t => t.user.name.toLowerCase().includes(q) || t.user.email.toLowerCase().includes(q));
@@ -25,7 +28,7 @@ export default function TeamPage() {
       return sortAsc ? (av as number) - (bv as number) : (bv as number) - (av as number);
     });
     return data;
-  }, [search, sortKey, sortAsc]);
+  }, [search, sortKey, sortAsc, teamStats]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
@@ -40,6 +43,17 @@ export default function TeamPage() {
       </span>
     </th>
   );
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-96 rounded-xl" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -96,6 +110,9 @@ export default function TeamPage() {
                   <td className="py-3 font-mono">{t.avgReviewTurnaroundHours}h</td>
                 </tr>
               ))}
+              {stats.length === 0 && (
+                <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">No team members found</td></tr>
+              )}
             </tbody>
           </table>
         </div>
