@@ -11,6 +11,7 @@ const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/team", label: "Team", icon: Users },
   { path: "/repositories", label: "Repositories", icon: GitBranch },
+  { path: "/webhook-events", label: "Webhooks", icon: Activity },
   { path: "/settings", label: "Settings", icon: Settings },
 ];
 
