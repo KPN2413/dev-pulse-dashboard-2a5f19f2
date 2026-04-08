@@ -42,7 +42,7 @@ export default function WebhookEventsPage() {
       .order("received_at", { ascending: false })
       .limit(100);
 
-    if (statusFilter !== "all") query = query.eq("status", statusFilter);
+    if (statusFilter !== "all") query = query.eq("status", statusFilter as "received" | "processed" | "failed");
     if (eventFilter !== "all") query = query.eq("event_type", eventFilter);
 
     const [{ data }, { data: repos }] = await Promise.all([
