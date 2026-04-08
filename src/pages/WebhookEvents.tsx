@@ -59,7 +59,8 @@ export default function WebhookEventsPage() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchData(); }, [statusFilter, eventFilter]);
+  useEffect(() => { fetchData(); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, eventFilter]);
 
   const eventTypes = [...new Set(events.map((e) => e.event_type))];
   const counts = {
