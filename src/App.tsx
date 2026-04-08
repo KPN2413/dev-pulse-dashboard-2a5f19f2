@@ -12,6 +12,7 @@ import DashboardPage from "./pages/Dashboard";
 import TeamPage from "./pages/Team";
 import RepositoriesPage from "./pages/Repositories";
 import SettingsPage from "./pages/Settings";
+import WebhookEventsPage from "./pages/WebhookEvents";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
