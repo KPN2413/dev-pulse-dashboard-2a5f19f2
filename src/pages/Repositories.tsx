@@ -4,12 +4,14 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRepositories, type RepoRow } from "@/hooks/use-repositories";
+import { useRepoSync } from "@/hooks/use-repo-sync";
 import { AddRepoForm } from "@/components/repositories/AddRepoForm";
 import { WebhookSetupPanel } from "@/components/repositories/WebhookSetupPanel";
 import { RepoCard } from "@/components/repositories/RepoCard";
 
 export default function RepositoriesPage() {
   const { repos, loading, addRepo, updateRepo, deleteRepo } = useRepositories();
+  const { getStatus, triggerSync } = useRepoSync();
   const [showAdd, setShowAdd] = useState(false);
   const [setupRepo, setSetupRepo] = useState<RepoRow | null>(null);
 
@@ -25,6 +27,10 @@ export default function RepositoriesPage() {
       setSetupRepo(repo);
     }
     return repo;
+  };
+
+  const handleSync = (repoId: string) => {
+    triggerSync(repoId);
   };
 
   if (loading) {
@@ -73,6 +79,8 @@ export default function RepositoriesPage() {
               onSetupWebhook={(r) => { setSetupRepo(r); setShowAdd(false); }}
               onDelete={deleteRepo}
               onUpdate={updateRepo}
+              syncStatus={getStatus(repo.id)}
+              onSync={handleSync}
             />
           ))}
           {repos.length === 0 && !showAdd && (
