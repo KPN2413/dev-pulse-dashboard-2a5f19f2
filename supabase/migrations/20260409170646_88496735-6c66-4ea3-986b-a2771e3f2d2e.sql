@@ -1,0 +1,2 @@
+
+ALTER TABLE public.repositories ADD COLUMN last_synced_at timestamp with time zone DEFAULT NULL;
