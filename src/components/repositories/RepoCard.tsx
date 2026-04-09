@@ -88,7 +88,7 @@ export function RepoCard({ repo, onSetupWebhook, onDelete, onUpdate, syncStatus,
             </span>
           )}
           {syncStatus.state === "success" && (
-            <span className="inline-flex items-center gap-1 text-xs text-green-600">
+            <span className="inline-flex items-center gap-1 text-xs text-primary">
               ✓ Synced
             </span>
           )}
