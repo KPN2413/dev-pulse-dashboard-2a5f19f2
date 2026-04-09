@@ -145,7 +145,7 @@ export function AddRepoForm({ onAdded, onCancel }: AddRepoFormProps) {
       )}
 
       <div className="flex items-center gap-2 pt-1">
-        {state !== "valid" ? (
+        {state !== "valid" && state !== "saving" ? (
           <Button onClick={handleValidate} disabled={state === "validating"}>
             {state === "validating" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Validate Repository
