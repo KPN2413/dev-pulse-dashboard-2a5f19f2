@@ -259,6 +259,7 @@ export type Database = {
           github_repo_id: string | null
           id: string
           is_active: boolean
+          last_synced_at: string | null
           name: string
           owner: string
           updated_at: string
@@ -271,6 +272,7 @@ export type Database = {
           github_repo_id?: string | null
           id?: string
           is_active?: boolean
+          last_synced_at?: string | null
           name: string
           owner: string
           updated_at?: string
@@ -283,6 +285,7 @@ export type Database = {
           github_repo_id?: string | null
           id?: string
           is_active?: boolean
+          last_synced_at?: string | null
           name?: string
           owner?: string
           updated_at?: string
