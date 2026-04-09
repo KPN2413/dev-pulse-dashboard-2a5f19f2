@@ -1,25 +1,29 @@
 import React, { useState } from "react";
-import { GitBranch, Settings, Zap, Loader2, Trash2 } from "lucide-react";
+import { GitBranch, Settings, Zap, Loader2, Trash2, RefreshCw, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { RepoStatusBadge } from "./RepoStatusBadge";
 import { getRepoStatus, testRepoConnection, type RepoRow } from "@/hooks/use-repositories";
+import type { SyncStatus } from "@/hooks/use-repo-sync";
 
 interface RepoCardProps {
   repo: RepoRow;
   onSetupWebhook: (repo: RepoRow) => void;
   onDelete: (id: string) => Promise<boolean>;
   onUpdate: (id: string, fields: Partial<RepoRow>) => Promise<boolean>;
+  syncStatus: SyncStatus;
+  onSync: (repoId: string) => void;
 }
 
-export function RepoCard({ repo, onSetupWebhook, onDelete, onUpdate }: RepoCardProps) {
+export function RepoCard({ repo, onSetupWebhook, onDelete, onUpdate, syncStatus, onSync }: RepoCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [testing, setTesting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
 
   const status = getRepoStatus(repo);
+  const isSyncing = syncStatus.state === "syncing";
 
   const handleTest = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -28,7 +32,6 @@ export function RepoCard({ repo, onSetupWebhook, onDelete, onUpdate }: RepoCardP
     try {
       const result = await testRepoConnection(repo.id);
       if (result.ok) {
-        // Update local webhook state if backend shows events
         if (result.hasRecentEvents && !repo.webhook_configured) {
           await onUpdate(repo.id, { webhook_configured: true });
         }
@@ -61,6 +64,13 @@ export function RepoCard({ repo, onSetupWebhook, onDelete, onUpdate }: RepoCardP
     setDeleting(false);
   };
 
+  const handleSync = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSync(repo.id);
+  };
+
+  const lastSynced = syncStatus.lastSyncedAt || (repo as any).last_synced_at;
+
   return (
     <div
       className="glass-card rounded-xl p-5 cursor-pointer hover:border-primary/30 transition-colors animate-fade-in"
@@ -71,10 +81,50 @@ export function RepoCard({ repo, onSetupWebhook, onDelete, onUpdate }: RepoCardP
           <GitBranch className="h-4 w-4 text-primary" />
           <span className="font-semibold text-sm">{repo.full_name}</span>
         </div>
-        <RepoStatusBadge status={status} />
+        <div className="flex items-center gap-2">
+          {syncStatus.state === "syncing" && (
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" /> Syncing…
+            </span>
+          )}
+          {syncStatus.state === "success" && (
+            <span className="inline-flex items-center gap-1 text-xs text-green-600">
+              ✓ Synced
+            </span>
+          )}
+          {syncStatus.state === "failed" && (
+            <span className="inline-flex items-center gap-1 text-xs text-destructive">
+              ✗ Failed
+            </span>
+          )}
+          <RepoStatusBadge status={status} />
+        </div>
       </div>
 
+      {lastSynced && (
+        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
+          <Clock className="h-3 w-3" />
+          Last synced: {format(new Date(lastSynced), "PPp")}
+        </div>
+      )}
+
+      {syncStatus.state === "failed" && syncStatus.error && (
+        <div className="mb-3 rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
+          {syncStatus.error}
+        </div>
+      )}
+
+      {syncStatus.state === "success" && syncStatus.stats && (
+        <div className="mb-3 rounded-lg bg-primary/5 p-2 text-xs text-muted-foreground">
+          Imported: {syncStatus.stats.prs} PRs · {syncStatus.stats.reviews} reviews · {syncStatus.stats.commits} commits · {syncStatus.stats.deployments} deployments
+        </div>
+      )}
+
       <div className="flex items-center gap-2 flex-wrap">
+        <Button variant="outline" size="sm" onClick={handleSync} disabled={isSyncing}>
+          {isSyncing ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="mr-1.5 h-3.5 w-3.5" />}
+          Sync Now
+        </Button>
         <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onSetupWebhook(repo); }}>
           <Settings className="mr-1.5 h-3.5 w-3.5" /> Setup Webhook
         </Button>
