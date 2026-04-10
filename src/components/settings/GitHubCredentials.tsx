@@ -105,7 +105,7 @@ export function GitHubCredentials() {
     <div className="glass-card rounded-xl p-6 animate-fade-in">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <Github className="h-5 w-5 text-foreground" />
+          <RefreshCw className="h-5 w-5 text-foreground" />
           <h2 className="text-lg font-semibold">GitHub Credentials</h2>
         </div>
         <StatusBadge status={status} />
