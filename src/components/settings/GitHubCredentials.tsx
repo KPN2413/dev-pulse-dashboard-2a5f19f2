@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   CheckCircle2, XCircle, AlertTriangle, Loader2,
-  Eye, EyeOff, Trash2, RefreshCw, Github, Unplug
+  Eye, EyeOff, Trash2, RefreshCw, Unplug
 } from "lucide-react";
 import { toast } from "sonner";
 
