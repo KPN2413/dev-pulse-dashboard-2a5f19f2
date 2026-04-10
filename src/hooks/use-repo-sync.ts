@@ -21,7 +21,7 @@ export function useRepoSync() {
   );
 
   const triggerSync = useCallback(
-    async (repoId: string, token?: string, sinceDays = 90) => {
+    async (repoId: string, _token?: string, sinceDays = 90) => {
       setSyncMap((prev) => ({
         ...prev,
         [repoId]: { state: "syncing", lastSyncedAt: prev[repoId]?.lastSyncedAt ?? null, error: null, stats: null },
@@ -29,7 +29,7 @@ export function useRepoSync() {
 
       try {
         const { data, error } = await supabase.functions.invoke("github-sync", {
-          body: { repoId, token: token || undefined, sinceDays },
+          body: { repoId, sinceDays },
         });
 
         if (error) throw new Error(error.message);

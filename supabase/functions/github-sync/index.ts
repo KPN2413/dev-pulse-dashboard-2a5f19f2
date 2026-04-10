@@ -346,12 +346,25 @@ Deno.serve(async (req) => {
 
     if (!repo) return err("Repository not found or access denied", 404);
 
+    // Resolve token: explicit > saved credential > none
+    let effectiveToken = token || undefined;
+    if (!effectiveToken) {
+      const { data: cred } = await adminClient
+        .from("github_credentials")
+        .select("token_encrypted, is_valid")
+        .eq("user_id", userId)
+        .single();
+      if (cred?.is_valid && cred.token_encrypted) {
+        effectiveToken = cred.token_encrypted;
+      }
+    }
+
     const stats = await syncRepo(
       adminClient,
       repoId,
       repo.owner,
       repo.name,
-      token || undefined,
+      effectiveToken,
       sinceDays || 90
     );
 

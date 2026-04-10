@@ -87,6 +87,36 @@ export type Database = {
           },
         ]
       }
+      github_credentials: {
+        Row: {
+          created_at: string
+          id: string
+          is_valid: boolean
+          token_encrypted: string
+          token_last_four: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_valid?: boolean
+          token_encrypted: string
+          token_last_four: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_valid?: boolean
+          token_encrypted?: string
+          token_last_four?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       metric_snapshots: {
         Row: {
           avg_cycle_time_hours: number | null

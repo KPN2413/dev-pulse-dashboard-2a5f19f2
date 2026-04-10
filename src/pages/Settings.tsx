@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Copy, ExternalLink, Info } from "lucide-react";
+import { GitHubCredentials } from "@/components/settings/GitHubCredentials";
 
 const webhookEvents = ["pull_request", "pull_request_review", "push", "deployment_status"];
 
@@ -45,6 +46,9 @@ export default function SettingsPage() {
             <Button>Save Changes</Button>
           </div>
         </div>
+
+        {/* GitHub Credentials */}
+        <GitHubCredentials />
 
         {/* Webhook Setup */}
         <div className="glass-card rounded-xl p-6 animate-fade-in">
