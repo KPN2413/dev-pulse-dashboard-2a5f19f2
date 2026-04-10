@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRepositories, type RepoRow } from "@/hooks/use-repositories";
 import { useRepoSync } from "@/hooks/use-repo-sync";
+import { useWebhookProvision } from "@/hooks/use-webhook-provision";
 import { AddRepoForm } from "@/components/repositories/AddRepoForm";
 import { WebhookSetupPanel } from "@/components/repositories/WebhookSetupPanel";
 import { RepoCard } from "@/components/repositories/RepoCard";
 
 export default function RepositoriesPage() {
-  const { repos, loading, addRepo, updateRepo, deleteRepo } = useRepositories();
+  const { repos, loading, addRepo, updateRepo, deleteRepo, fetchRepos } = useRepositories();
   const { getStatus, triggerSync } = useRepoSync();
+  const { getStatus: getProvisionStatus, provision, verify } = useWebhookProvision();
   const [showAdd, setShowAdd] = useState(false);
   const [setupRepo, setSetupRepo] = useState<RepoRow | null>(null);
 
@@ -31,6 +33,23 @@ export default function RepositoriesPage() {
 
   const handleSync = (repoId: string) => {
     triggerSync(repoId);
+  };
+
+  const handleProvision = async (repoId: string) => {
+    const result = await provision(repoId);
+    if (result?.success) {
+      // Refresh repos to get updated webhook metadata
+      fetchRepos();
+    } else if (result?.fallback) {
+      // Show manual setup panel
+      const repo = repos.find((r) => r.id === repoId);
+      if (repo) setSetupRepo(repo);
+    }
+  };
+
+  const handleVerify = async (repoId: string) => {
+    await verify(repoId);
+    fetchRepos();
   };
 
   if (loading) {
@@ -81,6 +100,9 @@ export default function RepositoriesPage() {
               onUpdate={updateRepo}
               syncStatus={getStatus(repo.id)}
               onSync={handleSync}
+              webhookProvisionStatus={getProvisionStatus(repo.id)}
+              onProvisionWebhook={handleProvision}
+              onVerifyWebhook={handleVerify}
             />
           ))}
           {repos.length === 0 && !showAdd && (
