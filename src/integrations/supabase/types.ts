@@ -287,6 +287,7 @@ export type Database = {
           created_at: string
           full_name: string
           github_repo_id: string | null
+          github_webhook_id: number | null
           id: string
           is_active: boolean
           last_synced_at: string | null
@@ -295,11 +296,15 @@ export type Database = {
           updated_at: string
           user_id: string
           webhook_configured: boolean
+          webhook_configured_at: string | null
+          webhook_last_checked_at: string | null
+          webhook_status: string
         }
         Insert: {
           created_at?: string
           full_name: string
           github_repo_id?: string | null
+          github_webhook_id?: number | null
           id?: string
           is_active?: boolean
           last_synced_at?: string | null
@@ -308,11 +313,15 @@ export type Database = {
           updated_at?: string
           user_id: string
           webhook_configured?: boolean
+          webhook_configured_at?: string | null
+          webhook_last_checked_at?: string | null
+          webhook_status?: string
         }
         Update: {
           created_at?: string
           full_name?: string
           github_repo_id?: string | null
+          github_webhook_id?: number | null
           id?: string
           is_active?: boolean
           last_synced_at?: string | null
@@ -321,6 +330,9 @@ export type Database = {
           updated_at?: string
           user_id?: string
           webhook_configured?: boolean
+          webhook_configured_at?: string | null
+          webhook_last_checked_at?: string | null
+          webhook_status?: string
         }
         Relationships: []
       }
