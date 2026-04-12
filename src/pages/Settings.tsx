@@ -86,30 +86,24 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Setup Guide */}
-        <div className="glass-card rounded-xl p-6 animate-fade-in">
-          <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-            <div>
-              <h2 className="text-lg font-semibold mb-2">Developer Setup Guide</h2>
-              <div className="space-y-3 text-sm text-muted-foreground">
-                <p>To run the full backend, you'll need these environment variables:</p>
-                <div className="rounded-lg bg-muted p-4 font-mono text-xs space-y-1">
-                  <p>DATABASE_URL=postgresql://user:pass@localhost:5432/devpulse</p>
-                  <p>REDIS_URL=redis://localhost:6379</p>
-                  <p>JWT_SECRET=your-secret-key</p>
-                  <p>GITHUB_WEBHOOK_SECRET=your-webhook-secret</p>
-                  <p>PORT=3001</p>
-                </div>
-                <p>See the generated backend scaffold in <code className="text-xs bg-background px-1.5 py-0.5 rounded">/mnt/documents/devpulse-backend/</code> for setup instructions.</p>
-                <a href="https://docs.github.com/en/webhooks" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
-                  GitHub Webhook Docs <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+{/* Setup Guide */}
+<div className="glass-card rounded-xl p-6 animate-fade-in">
+  <div className="flex items-start gap-3">
+    <Info className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+    <div>
+      <h2 className="text-lg font-semibold mb-2">Webhook Setup Guide</h2>
+      <div className="space-y-3 text-sm text-muted-foreground">
+        <p>To receive real-time GitHub events, configure a webhook on each repository pointing to your DevPulse webhook endpoint above.</p>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Go to your GitHub repository → Settings → Webhooks</li>
+          <li>Set the Payload URL to your webhook endpoint</li>
+          <li>Set Content type to <code className="text-xs bg-background px-1.5 py-0.5 rounded">application/json</code></li>
+          <li>Add your webhook secret and select the required events above</li>
+        </ol>
+        <a href="https://docs.github.com/en/webhooks" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+          GitHub Webhook Docs <ExternalLink className="h-3 w-3" />
+        </a>
       </div>
-    </DashboardLayout>
-  );
-}
+    </div>
+  </div>
+</div>
