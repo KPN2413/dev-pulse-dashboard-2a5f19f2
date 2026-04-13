@@ -28,24 +28,22 @@ Deno.serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Verify user
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
+
     const {
       data: { user },
       error: authErr,
     } = await userClient.auth.getUser();
+
     if (authErr || !user) {
       return json({ error: "Unauthorized" }, 401);
     }
 
-    // Admin client bypasses RLS (table has no policies)
     const admin = createClient(supabaseUrl, serviceKey);
-
     const { action, token } = await req.json();
 
-    // ── GET STATUS ──
     if (action === "status") {
       const { data: cred } = await admin
         .from("github_credentials")
@@ -56,6 +54,7 @@ Deno.serve(async (req) => {
       if (!cred) {
         return json({ status: "not_connected" });
       }
+
       return json({
         status: cred.is_valid ? "connected" : "invalid_token",
         tokenLastFour: cred.token_last_four,
@@ -63,15 +62,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── SAVE / REPLACE TOKEN ──
     if (action === "save") {
       if (!token || typeof token !== "string" || token.length < 10) {
-        return json({ error: "A valid GitHub personal access token is required" }, 400);
+        return json(
+          { error: "A valid GitHub personal access token is required" },
+          400
+        );
       }
 
       const lastFour = token.slice(-4);
 
-      // Test the token first
       const ghRes = await fetch("https://api.github.com/user", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -80,21 +80,33 @@ Deno.serve(async (req) => {
       });
 
       if (ghRes.status === 401) {
-        return json({
-          error: "Invalid token. Please check that the token is correct and not expired.",
-          status: "invalid_token",
-        }, 400);
+        return json(
+          {
+            error:
+              "Invalid token. Please check that the token is correct and not expired.",
+            status: "invalid_token",
+          },
+          400
+        );
       }
 
       if (ghRes.status === 403) {
         const remaining = ghRes.headers.get("x-ratelimit-remaining");
         if (remaining === "0") {
-          return json({ error: "GitHub rate limit exceeded. Try again later." }, 429);
+          return json(
+            { error: "GitHub rate limit exceeded. Try again later." },
+            429
+          );
         }
-        return json({
-          error: "Token has insufficient permissions. Ensure it has 'repo' scope.",
-          status: "invalid_token",
-        }, 400);
+
+        return json(
+          {
+            error:
+              "Token has insufficient permissions. Ensure it has 'repo' scope.",
+            status: "invalid_token",
+          },
+          400
+        );
       }
 
       if (!ghRes.ok) {
@@ -103,13 +115,12 @@ Deno.serve(async (req) => {
 
       const ghUser = await ghRes.json();
 
-      // Upsert credential
       const { error: upsertErr } = await admin
         .from("github_credentials")
         .upsert(
           {
             user_id: user.id,
-            token_plaintext: token,
+            token_encrypted: token,
             token_last_four: lastFour,
             is_valid: true,
             updated_at: new Date().toISOString(),
@@ -118,7 +129,7 @@ Deno.serve(async (req) => {
         );
 
       if (upsertErr) {
-        return json({ error: "Failed to save credentials" }, 500);
+        return json({ error: upsertErr.message || "Failed to save credentials" }, 500);
       }
 
       return json({
@@ -128,41 +139,39 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── REMOVE TOKEN ──
     if (action === "remove") {
-      await admin
-        .from("github_credentials")
-        .delete()
-        .eq("user_id", user.id);
-
+      await admin.from("github_credentials").delete().eq("user_id", user.id);
       return json({ status: "not_connected" });
     }
 
-    // ── TEST CONNECTION ──
     if (action === "test") {
       const { data: cred } = await admin
         .from("github_credentials")
-        .select("token_plaintext, is_valid")
+        .select("token_encrypted, is_valid")
         .eq("user_id", user.id)
         .single();
 
       if (!cred) {
-        return json({ status: "not_connected", ok: false, error: "No GitHub token saved" });
+        return json({
+          status: "not_connected",
+          ok: false,
+          error: "No GitHub token saved",
+        });
       }
 
       const ghRes = await fetch("https://api.github.com/user", {
         headers: {
-          Authorization: `Bearer ${cred.token_plaintext}`,
+          Authorization: `Bearer ${cred.token_encrypted}`,
           Accept: "application/vnd.github+json",
         },
       });
 
       if (ghRes.status === 401) {
-        // Mark as invalid
         await admin
           .from("github_credentials")
           .update({ is_valid: false })
           .eq("user_id", user.id);
+
         return json({
           status: "invalid_token",
           ok: false,
@@ -171,14 +180,19 @@ Deno.serve(async (req) => {
       }
 
       if (ghRes.status === 403) {
-        const remaining = ghRes.headers.get("x-ratelimit-remaining");
+        const remaining = ghRes.headers.get("x-ratelimit("x-ratelimit-remaining");
         if (remaining === "0") {
-          return json({ ok: false, error: "GitHub rate limit exceeded. Try again later." });
+          return json({
+            ok: false,
+            error: "GitHub rate limit exceeded. Try again later.",
+          });
         }
+
         await admin
           .from("github_credentials")
           .update({ is_valid: false })
           .eq("user_id", user.id);
+
         return json({
           status: "invalid_token",
           ok: false,
@@ -190,7 +204,6 @@ Deno.serve(async (req) => {
         return json({ ok: false, error: `GitHub error: ${ghRes.status}` });
       }
 
-      // Ensure marked valid
       if (!cred.is_valid) {
         await admin
           .from("github_credentials")
