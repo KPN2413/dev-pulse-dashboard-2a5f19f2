@@ -1,1 +1,10 @@
 project_id = "izevxjqgjekaxcybwamd"
+
+[functions.github-credentials]
+verify_jwt = false
+
+[functions.validate-repo]
+verify_jwt = false
+
+[functions.github-webhook-provision]
+verify_jwt = false
