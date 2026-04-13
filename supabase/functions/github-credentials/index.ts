@@ -38,19 +38,26 @@ Deno.serve(async (req) => {
 } = await userClient.auth.getUser();
 
 if (authErr || !user) {
-  console.error("AUTH_DEBUG_github_credentials", {
-    authErr: authErr ? {
-      name: authErr.name,
-      message: authErr.message,
-      status: (authErr as any).status,
-      code: (authErr as any).code,
-    } : null,
-    hasUser: !!user,
-    hasAuthorizationHeader: !!authHeader,
-    authHeaderStartsWithBearer: authHeader?.startsWith("Bearer ") ?? false,
-  });
-
-  return json({ error: "Unauthorized" }, 401);
+  return json(
+    {
+      error: "Unauthorized",
+      debug: {
+        authErr: authErr
+          ? {
+              name: authErr.name,
+              message: authErr.message,
+              status: (authErr as any)?.status ?? null,
+              code: (authErr as any)?.code ?? null,
+            }
+          : null,
+        hasUser: !!user,
+        hasAuthorizationHeader: !!authHeader,
+        authHeaderStartsWithBearer: authHeader?.startsWith("Bearer ") ?? false,
+        supabaseUrl: supabaseUrl,
+      },
+    },
+    401
+  );
 }
 
     const admin = createClient(supabaseUrl, serviceKey);
