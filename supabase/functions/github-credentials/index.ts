@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
         .upsert(
           {
             user_id: user.id,
-            token_encrypted: token,
+            token_plaintext: token,
             token_last_four: lastFour,
             is_valid: true,
             updated_at: new Date().toISOString(),
@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
     if (action === "test") {
       const { data: cred } = await admin
         .from("github_credentials")
-        .select("token_encrypted, is_valid")
+        .select("token_plaintext, is_valid")
         .eq("user_id", user.id)
         .single();
 
@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
 
       const ghRes = await fetch("https://api.github.com/user", {
         headers: {
-          Authorization: `Bearer ${cred.token_encrypted}`,
+          Authorization: `Bearer ${cred.token_plaintext}`,
           Accept: "application/vnd.github+json",
         },
       });

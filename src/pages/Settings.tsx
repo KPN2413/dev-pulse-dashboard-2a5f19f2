@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,6 @@ export default function SettingsPage() {
           <p className="text-sm text-muted-foreground">Manage your profile and app configuration</p>
         </div>
 
-        {/* Profile */}
         <div className="glass-card rounded-xl p-6 animate-fade-in">
           <h2 className="text-lg font-semibold mb-4">Profile</h2>
           <div className="space-y-4">
@@ -47,16 +46,13 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* GitHub Credentials */}
         <GitHubCredentials />
 
-        {/* Webhook Setup */}
         <div className="glass-card rounded-xl p-6 animate-fade-in">
           <h2 className="text-lg font-semibold mb-4">GitHub Webhook Configuration</h2>
           <p className="text-sm text-muted-foreground mb-4">
             Configure a GitHub webhook to receive real-time events from your repositories.
           </p>
-
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Webhook Endpoint</Label>
@@ -67,7 +63,6 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </div>
-
             <div className="space-y-2">
               <Label>Required Events</Label>
               <div className="flex flex-wrap gap-2">
@@ -76,7 +71,6 @@ export default function SettingsPage() {
                 ))}
               </div>
             </div>
-
             <div className="space-y-2">
               <Label>Webhook Secret</Label>
               <div className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
@@ -86,24 +80,28 @@ export default function SettingsPage() {
           </div>
         </div>
 
-{/* Setup Guide */}
-<div className="glass-card rounded-xl p-6 animate-fade-in">
-  <div className="flex items-start gap-3">
-    <Info className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-    <div>
-      <h2 className="text-lg font-semibold mb-2">Webhook Setup Guide</h2>
-      <div className="space-y-3 text-sm text-muted-foreground">
-        <p>To receive real-time GitHub events, configure a webhook on each repository pointing to your DevPulse webhook endpoint above.</p>
-        <ol className="list-decimal list-inside space-y-1">
-          <li>Go to your GitHub repository → Settings → Webhooks</li>
-          <li>Set the Payload URL to your webhook endpoint</li>
-          <li>Set Content type to <code className="text-xs bg-background px-1.5 py-0.5 rounded">application/json</code></li>
-          <li>Add your webhook secret and select the required events above</li>
-        </ol>
-        <a href="https://docs.github.com/en/webhooks" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
-          GitHub Webhook Docs <ExternalLink className="h-3 w-3" />
-        </a>
+        <div className="glass-card rounded-xl p-6 animate-fade-in">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+            <div>
+              <h2 className="text-lg font-semibold mb-2">Webhook Setup Guide</h2>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <p>To receive real-time GitHub events, configure a webhook on each repository pointing to your DevPulse webhook endpoint above.</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Go to your GitHub repository - Settings - Webhooks</li>
+                  <li>Set the Payload URL to your webhook endpoint</li>
+                  <li>Set Content type to <code className="text-xs bg-background px-1.5 py-0.5 rounded">application/json</code></li>
+                  <li>Add your webhook secret and select the required events above</li>
+                </ol>
+                <a href="https://docs.github.com/en/webhooks" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+                  GitHub Webhook Docs <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
-    </div>
-  </div>
-</div>
+    </DashboardLayout>
+  );
+}
