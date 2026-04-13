@@ -199,7 +199,7 @@ if (authErr || !user) {
       }
 
       if (ghRes.status === 403) {
-        const remaining = ghRes.headers.get("x-ratelimit("x-ratelimit-remaining");
+const remaining = ghRes.headers.get("x-ratelimit-remaining");
         if (remaining === "0") {
           return json({
             ok: false,
