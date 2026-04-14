@@ -11,7 +11,8 @@ async function getUserToken(admin: ReturnType<typeof createClient>, userId: stri
     .from("github_credentials")
     .select("token_encrypted, is_valid")
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
+
   if (data?.is_valid && data.token_encrypted) return data.token_encrypted;
   return null;
 }

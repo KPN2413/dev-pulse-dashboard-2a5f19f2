@@ -122,10 +122,10 @@ async function syncRepo(
 
         // We need the PR's DB id — look it up
         const { data: dbPr } = await supabase
-          .from("pull_requests")
-          .select("id")
-          .eq("github_pr_id", String(pr.id))
-          .single();
+  .from("pull_requests")
+  .select("id")
+  .eq("github_pr_id", String(pr.id))
+  .maybeSingle();
         if (!dbPr) continue;
 
         const { error: revErr } = await supabase.from("pull_request_reviews").upsert(
@@ -338,11 +338,14 @@ Deno.serve(async (req) => {
 
     // Verify repo ownership
     const { data: repo } = await adminClient
-      .from("repositories")
-      .select("*")
-      .eq("id", repoId)
-      .eq("user_id", userId)
-      .single();
+  .from("repositories")
+  .select("*")
+  .eq("id", repoId)
+  .eq("user_id", userId)
+  .maybeSingle();
+
+if (repoErr || !repo) return err("Repository not found or access denied", 404);
+
 
     if (!repo) return err("Repository not found or access denied", 404);
 
@@ -350,10 +353,10 @@ Deno.serve(async (req) => {
     let effectiveToken = token || undefined;
     if (!effectiveToken) {
       const { data: cred } = await adminClient
-        .from("github_credentials")
-        .select("token_encrypted, is_valid")
-        .eq("user_id", userId)
-        .single();
+  .from("github_credentials")
+  .select("token_encrypted, is_valid")
+  .eq("user_id", userId)
+  .maybeSingle();
       if (cred?.is_valid && cred.token_encrypted) {
         effectiveToken = cred.token_encrypted;
       }
