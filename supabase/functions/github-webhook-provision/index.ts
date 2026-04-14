@@ -47,16 +47,36 @@ Deno.serve(async (req) => {
   const webhookSecret = Deno.env.get("GITHUB_WEBHOOK_SECRET") || "";
 
   // Authenticate user
-  const authHeader = req.headers.get("authorization");
-  if (!authHeader) return jsonResponse({ error: "Unauthorized" }, 401);
+  const authHeader =
+  req.headers.get("Authorization") ?? req.headers.get("authorization");
 
-  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-  const supabaseUser = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-    global: { headers: { authorization: authHeader } },
-  });
-  const { data: { user } } = await supabaseUser.auth.getUser();
-  if (!user) return jsonResponse({ error: "Unauthorized" }, 401);
+if (!authHeader?.startsWith("Bearer ")) {
+  return jsonResponse({ error: "Unauthorized" }, 401);
+}
 
+const token = authHeader.replace("Bearer ", "").trim();
+
+const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+
+const supabaseUser = createClient(
+  supabaseUrl,
+  Deno.env.get("SUPABASE_ANON_KEY")!,
+  {
+    auth: { persistSession: false, autoRefreshToken: false },
+  }
+);
+
+const {
+  data: { user },
+  error: userError,
+} = await supabaseUser.auth.getUser(token);
+
+if (userError || !user) {
+  console.error("github-webhook-provision auth failed:", userError);
+  return jsonResponse({ error: "Unauthorized" }, 401);
+}
   let body: Record<string, unknown>;
   try {
     body = await req.json();
