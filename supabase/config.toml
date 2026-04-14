@@ -2,3 +2,6 @@ project_id = "izevxjqgjekaxcybwamd"
 
 [functions.github-webhook]
 verify_jwt = false
+
+[functions.github-webhook-provision]
+verify_jwt = false
